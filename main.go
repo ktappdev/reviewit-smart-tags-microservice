@@ -17,7 +17,6 @@ func loadEnv() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found or error loading it. Using system environment variables.")
 	}
-	fmt.Println("Loading .env file")
 }
 
 func initDB() error {
