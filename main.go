@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
@@ -39,6 +40,10 @@ func main() {
 	app := fiber.New()
 	app.Use(logger.New())
 
+	app.Use(cors.New(cors.Config{ // Apply CORS middleware
+		AllowOrigins: "http://localhost:3000, http://127.0.0.1:3000, https://reviewit.lugetech.com/", // Allow requests from localhost
+		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
+	}))
 	if err := initDB(); err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
