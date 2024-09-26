@@ -36,12 +36,12 @@ func initDB() error {
 }
 
 func main() {
-	loadEnv() // Load .env file if it exists
+	loadEnv()
 	app := fiber.New()
 	app.Use(logger.New())
 
-	app.Use(cors.New(cors.Config{ // Apply CORS middleware
-		AllowOrigins: "http://localhost:3000, http://127.0.0.1:3000, https://reviewit.lugetech.com/", // Allow requests from localhost
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "http://localhost:3000, http://127.0.0.1:3000, https://reviewit.lugetech.com/",
 		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
 	}))
 	if err := initDB(); err != nil {
