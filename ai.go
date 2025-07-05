@@ -49,7 +49,7 @@ func queryAi(prompt string) (TagsResponse, error) {
 	if err != nil {
 		return TagsResponse{}, fmt.Errorf("failed to create HTTP request: %w", err)
 	}
-	req.Header.Set("Authorization", apiKey)
+	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{
@@ -62,7 +62,8 @@ func queryAi(prompt string) (TagsResponse, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return TagsResponse{}, fmt.Errorf("API request failed with status: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return TagsResponse{}, fmt.Errorf("API request failed with status: %d, response: %s", resp.StatusCode, string(body))
 	}
 
 	body, err := io.ReadAll(resp.Body)
