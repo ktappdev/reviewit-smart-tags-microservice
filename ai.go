@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 )
 
 type ResponseMessage struct {
@@ -31,32 +32,57 @@ func queryAi(prompt string) (TagsResponse, error) {
 	url := "https://openrouter.ai/api/v1/chat/completions"
 	apiKey := os.Getenv("OPEN_ROUTER_API_KEY")
 	if apiKey == "" {
-		fmt.Println("Error: No API key found")
+		return TagsResponse{}, fmt.Errorf("OPEN_ROUTER_API_KEY environment variable is not set")
 	}
 
-	requestBody, _ := json.Marshal(map[string]interface{}{
+	requestBody, err := json.Marshal(map[string]interface{}{
 		"model": "openai/gpt-3.5-turbo",
 		"messages": []map[string]string{
 			{"role": "user", "content": direction + prompt},
 		},
 	})
+	if err != nil {
+		return TagsResponse{}, fmt.Errorf("failed to marshal request body: %w", err)
+	}
 
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return TagsResponse{}, fmt.Errorf("failed to create HTTP request: %w", err)
+	}
 	req.Header.Set("Authorization", apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
 	resp, err := client.Do(req)
+	if err != nil {
+		return TagsResponse{}, fmt.Errorf("failed to make HTTP request: %w", err)
+	}
 	defer resp.Body.Close()
 
-	var aiResponse AiResponse
-	var tagsResponse TagsResponse
-	body, _ := io.ReadAll(resp.Body)
-	err = json.Unmarshal([]byte(body), &aiResponse)
-	if err != nil {
-		fmt.Println("Error unmarshaling JSON:", err)
+	if resp.StatusCode != http.StatusOK {
+		return TagsResponse{}, fmt.Errorf("API request failed with status: %d", resp.StatusCode)
 	}
-	data := aiResponse.Choices[0].Message.Content
-	_ = json.Unmarshal([]byte(data), &tagsResponse)
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return TagsResponse{}, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var aiResponse AiResponse
+	if err := json.Unmarshal(body, &aiResponse); err != nil {
+		return TagsResponse{}, fmt.Errorf("failed to unmarshal AI response: %w", err)
+	}
+
+	if len(aiResponse.Choices) == 0 {
+		return TagsResponse{}, fmt.Errorf("no choices returned from AI API")
+	}
+
+	var tagsResponse TagsResponse
+	if err := json.Unmarshal([]byte(aiResponse.Choices[0].Message.Content), &tagsResponse); err != nil {
+		return TagsResponse{}, fmt.Errorf("failed to unmarshal tags response: %w", err)
+	}
+
 	return tagsResponse, nil
 }

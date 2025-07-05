@@ -20,6 +20,16 @@ func loadEnv() {
 	}
 }
 
+func validateConfig() error {
+	requiredVars := []string{"DATABASE_URL", "APP_API", "OPEN_ROUTER_API_KEY"}
+	for _, v := range requiredVars {
+		if os.Getenv(v) == "" {
+			return fmt.Errorf("required environment variable %s is not set", v)
+		}
+	}
+	return nil
+}
+
 func initDB() error {
 	connStr := os.Getenv("DATABASE_URL")
 	if connStr == "" {
@@ -37,10 +47,21 @@ func initDB() error {
 
 func main() {
 	loadEnv()
+	
+	if err := validateConfig(); err != nil {
+		log.Fatalf("Configuration validation failed: %v", err)
+	}
+	
 	app := fiber.New()
 	app.Use(logger.New())
 
-	app.Use(cors.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     "https://reviewit.gy,http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000",
+		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
+		AllowHeaders:     "Origin, Content-Type, Accept, Cache-Control, Authorization, X-Requested-With",
+		AllowCredentials: true,
+		ExposeHeaders:    "Content-Length, Content-Type",
+	}))
 
 	if err := initDB(); err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
