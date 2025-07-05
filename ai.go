@@ -35,8 +35,35 @@ func queryAi(prompt string) (TagsResponse, error) {
 		return TagsResponse{}, fmt.Errorf("OPEN_ROUTER_API_KEY environment variable is not set")
 	}
 
+	// Models to try in order (primary first, then fallback)
+	models := []string{
+		"meta-llama/llama-3.2-1b-instruct",
+		"google/gemma-3-4b-it",
+	}
+
+	var lastErr error
+	
+	for i, model := range models {
+		response, err := tryModel(url, apiKey, model, prompt)
+		if err == nil {
+			return response, nil
+		}
+		
+		lastErr = err
+		fmt.Printf("Model %s failed: %v\n", model, err)
+		
+		// If this isn't the last model, continue to next
+		if i < len(models)-1 {
+			fmt.Printf("Trying fallback model: %s\n", models[i+1])
+		}
+	}
+	
+	return TagsResponse{}, fmt.Errorf("all models failed, last error: %w", lastErr)
+}
+
+func tryModel(url, apiKey, model, prompt string) (TagsResponse, error) {
 	requestBody, err := json.Marshal(map[string]interface{}{
-		"model": "openai/gpt-3.5-turbo",
+		"model": model,
 		"messages": []map[string]string{
 			{"role": "user", "content": direction + prompt},
 		},
