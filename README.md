@@ -1,13 +1,12 @@
 # reviewit-smart-tags-microservice
 
-A Go microservice for generating AI-powered tags for business reviews using OpenRouter API.
+A lightweight Go microservice for generating AI-powered tags from business descriptions using OpenRouter API.
 
 ## Features
 
 - Generate tags from business descriptions using AI
-- Regenerate tags for existing reviews
-- RESTful API endpoints
-- PostgreSQL database integration
+- No database dependencies - stateless operation
+- RESTful API endpoint
 - CORS support for web applications
 
 ## Setup
@@ -28,15 +27,11 @@ A Go microservice for generating AI-powered tags for business reviews using Open
 
 ## API Endpoints
 
-- `POST /gettags` - Get tags for a review by ID
-- `POST /regen` - Regenerate tags for an existing review
 - `POST /gen` - Generate tags from a description
 
 ## Environment Variables
 
-- `DATABASE_URL` - PostgreSQL connection string
-- `APP_API` - External API endpoint for review data
-- `OPEN_ROUTER_API_KEY` - OpenRouter API key for AI requests
+- `OPEN_ROUTER_API_KEY` - OpenRouter API key for AI requests (required)
 - `PORT` - Server port (default: 3003)
 
 ## Development
