@@ -15,10 +15,8 @@ The tags should be:
 4. All in lowercase, even for proper nouns
 5. Without duplicates or extremely similar terms
 
-Return the result as a JSON object with a single key "tags" containing an array of exactly 30 string values. Do not include any explanations or additional text.
+Return the result as a JSON object with a single key "tags" containing an array of exactly 30 string values. Return ONLY the JSON object, with no markdown, backticks, explanations, or additional text.
 
 Example output format:
-{
-  "tags": ["technology", "e-commerce", "digital marketing", "software development", "cloud computing", "data analytics", "user experience", "mobile apps", "artificial intelligence", "cybersecurity", "fintech", "saas", "big data", "blockchain", "iot", "machine learning", "web development", "digital transformation", "startup", "b2b"]
-}
+{"tags": ["technology", "e-commerce", "digital marketing", "software development", "cloud computing", "data analytics", "user experience", "mobile apps", "artificial intelligence", "cybersecurity", "fintech", "saas", "big data", "blockchain", "iot", "machine learning", "web development", "digital transformation", "startup", "b2b", "it services", "product management", "devops", "agile methodology", "customer success", "business intelligence", "data science", "network security", "software engineering", "innovation"]}
 `

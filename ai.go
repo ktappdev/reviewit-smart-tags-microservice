@@ -35,10 +35,11 @@ func queryAi(prompt string) (TagsResponse, error) {
 		return TagsResponse{}, fmt.Errorf("OPEN_ROUTER_API_KEY environment variable is not set")
 	}
 
-	// Models to try in order (primary first, then fallback)
+	// Models to try in order (primary first, then fallbacks)
 	models := []string{
-		"meta-llama/llama-3.2-1b-instruct",
-		"google/gemma-3-4b-it",
+		"google/gemini-2.5-flash-lite",    // Primary: Fast and capable
+		"meta-llama/llama-4-scout",         // Fallback 1: Strong performance
+		"openai/gpt-oss-20b",              // Fallback 2: Reliable final option
 	}
 
 	var lastErr error
