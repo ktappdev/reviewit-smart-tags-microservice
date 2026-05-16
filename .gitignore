@@ -5,3 +5,4 @@
 *.log
 tmp/
 reviewit-smarttags-go
+.pi/agent-sessions/

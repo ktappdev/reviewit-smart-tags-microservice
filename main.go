@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
 )
@@ -32,8 +34,29 @@ func main() {
 		log.Fatalf("Configuration validation failed: %v", err)
 	}
 	
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		BodyLimit: 10 * 1024,
+	})
 	app.Use(logger.New())
+
+	app.Use(limiter.New(limiter.Config{
+		Max:        3,
+		Expiration: 1 * time.Minute,
+		KeyGenerator: func(c *fiber.Ctx) string {
+			if ip := c.Get("X-Forwarded-For"); ip != "" {
+				return ip
+			}
+			if ip := c.Get("X-Real-IP"); ip != "" {
+				return ip
+			}
+			return c.IP()
+		},
+		LimitReached: func(c *fiber.Ctx) error {
+			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
+				"error": "Rate limit exceeded",
+			})
+		},
+	}))
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     "https://reviewit.gy,http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000",

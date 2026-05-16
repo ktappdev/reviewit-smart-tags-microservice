@@ -22,7 +22,6 @@ func getTagsFromDescription(c *fiber.Ctx) error {
 		fmt.Printf("Error querying AI: %v\n", err)
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to query AI",
-			"details": err.Error(),
 		})
 	}
 	return c.JSON(response)
