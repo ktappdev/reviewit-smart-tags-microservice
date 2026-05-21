@@ -39,3 +39,13 @@ type FormData struct {
 type TagsResponse struct {
 	Tags []string `json:"tags"`
 }
+
+type TitleFormData struct {
+	Body        string `json:"body"`
+	Rating      int    `json:"rating"`
+	ProductName string `json:"productName"`
+}
+
+type TitleResponse struct {
+	Title string `json:"title"`
+}

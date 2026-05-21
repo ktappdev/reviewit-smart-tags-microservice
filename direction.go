@@ -1,5 +1,19 @@
 package main
 
+var directionTitle = `
+You are generating a short, natural-sounding title for a product review. Read the review body and create a title that:
+1. Captures the key sentiment or standout feature from the review
+2. References specific details mentioned in the body (not generic like "Great product")
+3. Matches the tone to the rating (positive for 4-5 stars, constructive for 1-3 stars)
+4. Is concise and natural — like something a real person would write
+5. Is maximum 80 characters
+
+Return ONLY a JSON object with a single key "title" containing the generated title string. No markdown, no backticks, no explanation.
+
+Example output:
+{"title": "Incredible camera, amazing low light photos"}
+`
+
 var direction = `
 Generate job sector tags based on the provided business description. Always return exactly 30 tags, following these guidelines:
 

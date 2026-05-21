@@ -67,6 +67,7 @@ func main() {
 	}))
 
 	app.Post("/gen", getTagsFromDescription)
+	app.Post("/api/ai/generate-title", generateTitle)
 
 	port := os.Getenv("PORT")
 	if port == "" {

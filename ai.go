@@ -28,11 +28,11 @@ type ResponseBody struct {
 	} `json:"choices"`
 }
 
-func queryAi(prompt string) (TagsResponse, error) {
+func queryAI(prompt string) (string, error) {
 	url := "https://openrouter.ai/api/v1/chat/completions"
 	apiKey := os.Getenv("OPEN_ROUTER_API_KEY")
 	if apiKey == "" {
-		return TagsResponse{}, fmt.Errorf("OPEN_ROUTER_API_KEY environment variable is not set")
+		return "", fmt.Errorf("OPEN_ROUTER_API_KEY environment variable is not set")
 	}
 
 	// Models to try in order (primary first, then fallbacks)
@@ -59,23 +59,23 @@ func queryAi(prompt string) (TagsResponse, error) {
 		}
 	}
 	
-	return TagsResponse{}, fmt.Errorf("all models failed, last error: %w", lastErr)
+	return "", fmt.Errorf("all models failed, last error: %w", lastErr)
 }
 
-func tryModel(url, apiKey, model, prompt string) (TagsResponse, error) {
+func tryModel(url, apiKey, model, prompt string) (string, error) {
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"model": model,
 		"messages": []map[string]string{
-			{"role": "user", "content": direction + prompt},
+			{"role": "user", "content": prompt},
 		},
 	})
 	if err != nil {
-		return TagsResponse{}, fmt.Errorf("failed to marshal request body: %w", err)
+		return "", fmt.Errorf("failed to marshal request body: %w", err)
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
-		return TagsResponse{}, fmt.Errorf("failed to create HTTP request: %w", err)
+		return "", fmt.Errorf("failed to create HTTP request: %w", err)
 	}
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
@@ -85,33 +85,28 @@ func tryModel(url, apiKey, model, prompt string) (TagsResponse, error) {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return TagsResponse{}, fmt.Errorf("failed to make HTTP request: %w", err)
+		return "", fmt.Errorf("failed to make HTTP request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return TagsResponse{}, fmt.Errorf("API request failed with status: %d, response: %s", resp.StatusCode, string(body))
+		return "", fmt.Errorf("API request failed with status: %d, response: %s", resp.StatusCode, string(body))
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return TagsResponse{}, fmt.Errorf("failed to read response body: %w", err)
+		return "", fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	var aiResponse AiResponse
 	if err := json.Unmarshal(body, &aiResponse); err != nil {
-		return TagsResponse{}, fmt.Errorf("failed to unmarshal AI response: %w", err)
+		return "", fmt.Errorf("failed to unmarshal AI response: %w", err)
 	}
 
 	if len(aiResponse.Choices) == 0 {
-		return TagsResponse{}, fmt.Errorf("no choices returned from AI API")
+		return "", fmt.Errorf("no choices returned from AI API")
 	}
 
-	var tagsResponse TagsResponse
-	if err := json.Unmarshal([]byte(aiResponse.Choices[0].Message.Content), &tagsResponse); err != nil {
-		return TagsResponse{}, fmt.Errorf("failed to unmarshal tags response: %w", err)
-	}
-
-	return tagsResponse, nil
+	return aiResponse.Choices[0].Message.Content, nil
 }
