@@ -27,13 +27,14 @@ func generateTitle(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Rating must be between 1 and 5"})
 	}
 
-	prompt := directionTitle + "\n\nBody: " + formData.Body + "\nRating: " + fmt.Sprintf("%d", formData.Rating) + " stars"
+	systemPrompt := directionTitle
+	userPrompt := "Body: " + formData.Body + "\nRating: " + fmt.Sprintf("%d", formData.Rating) + " stars"
 	if trimmed := strings.TrimSpace(formData.ProductName); trimmed != "" {
 		formData.ProductName = trimmed
-		prompt += "\nProduct: " + formData.ProductName
+		userPrompt += "\nProduct: " + formData.ProductName
 	}
 
-	rawContent, err := queryAI(prompt)
+	rawContent, err := queryAI(systemPrompt, userPrompt)
 	if err != nil {
 		fmt.Printf("Error querying AI for title: %v\n", err)
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate title"})

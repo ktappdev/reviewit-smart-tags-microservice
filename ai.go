@@ -28,7 +28,7 @@ type ResponseBody struct {
 	} `json:"choices"`
 }
 
-func queryAI(prompt string) (string, error) {
+func queryAI(systemPrompt, userPrompt string) (string, error) {
 	url := "https://openrouter.ai/api/v1/chat/completions"
 	apiKey := os.Getenv("OPEN_ROUTER_API_KEY")
 	if apiKey == "" {
@@ -37,15 +37,15 @@ func queryAI(prompt string) (string, error) {
 
 	// Models to try in order (primary first, then fallbacks)
 	models := []string{
-		"google/gemini-2.5-flash-lite",    // Primary: Fast and capable
-		"meta-llama/llama-4-scout",         // Fallback 1: Strong performance
-		"openai/gpt-oss-20b",              // Fallback 2: Reliable final option
+		"openrouter/free",                     // Primary: Free tier models
+		"meta-llama/llama-3.1-8b-instruct",    // Fallback 1: Reliable instruction-following
+		"google/gemini-2.5-flash-lite",        // Fallback 2: Fast and capable
 	}
 
 	var lastErr error
 	
 	for i, model := range models {
-		response, err := tryModel(url, apiKey, model, prompt)
+		response, err := tryModel(url, apiKey, model, systemPrompt, userPrompt)
 		if err == nil {
 			return response, nil
 		}
@@ -62,12 +62,16 @@ func queryAI(prompt string) (string, error) {
 	return "", fmt.Errorf("all models failed, last error: %w", lastErr)
 }
 
-func tryModel(url, apiKey, model, prompt string) (string, error) {
+func tryModel(url, apiKey, model, systemPrompt, userPrompt string) (string, error) {
+	messages := []map[string]string{}
+	if systemPrompt != "" {
+		messages = append(messages, map[string]string{"role": "system", "content": systemPrompt})
+	}
+	messages = append(messages, map[string]string{"role": "user", "content": userPrompt})
+
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"model": model,
-		"messages": []map[string]string{
-			{"role": "user", "content": prompt},
-		},
+		"messages": messages,
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal request body: %w", err)

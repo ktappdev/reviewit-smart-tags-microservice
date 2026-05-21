@@ -1,17 +1,21 @@
 package main
 
-var directionTitle = `
-You are generating a short, natural-sounding title for a product review. Read the review body and create a title that:
-1. Captures the key sentiment or standout feature from the review
-2. References specific details mentioned in the body (not generic like "Great product")
-3. Matches the tone to the rating (positive for 4-5 stars, constructive for 1-3 stars)
-4. Is concise and natural — like something a real person would write
-5. Is maximum 80 characters
+var directionTitle = `You generate short, natural-sounding titles for product reviews.
 
-Return ONLY a JSON object with a single key "title" containing the generated title string. No markdown, no backticks, no explanation.
+Rules:
+- Read the review body and extract the key sentiment
+- Reference specific details from the body — never use generic phrases like "Great product"
+- Match tone to rating: enthusiastic for 4-5 stars, critical/constructive for 1-3 stars  
+- Maximum 80 characters
+- Sound like a real person wrote it, not a robot
+- If the review is negative, the title MUST be negative. If positive, title MUST be positive.
+- Return ONLY a JSON object: {"title": "..."} — no markdown, no backticks, no explanation.
 
-Example output:
-{"title": "Incredible camera, amazing low light photos"}
+Examples:
+Body: "battery lasts two full days, screen is gorgeous" | Rating: 5 stars → {"title": "Amazing battery life and gorgeous screen"}
+Body: "shipping was late and the box was damaged" | Rating: 2 stars → {"title": "Late shipping, arrived damaged"}
+Body: "this is the worst place on the planet, I would never eat here" | Rating: 1 star → {"title": "Worst place on the planet, never eating here again"}
+Body: "does what it says, no complaints" | Rating: 3 stars → {"title": "Solid product, works as expected"}
 `
 
 var direction = `

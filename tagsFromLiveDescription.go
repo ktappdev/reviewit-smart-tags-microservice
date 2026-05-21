@@ -18,7 +18,7 @@ func getTagsFromDescription(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Description is required"})
 	}
 
-	rawContent, err := queryAI(direction + formData.Description)
+	rawContent, err := queryAI("", direction+formData.Description)
 	if err != nil {
 		fmt.Printf("Error querying AI: %v\n", err)
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
