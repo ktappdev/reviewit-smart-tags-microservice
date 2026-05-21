@@ -37,9 +37,9 @@ func queryAI(systemPrompt, userPrompt string) (string, error) {
 
 	// Models to try in order (primary first, then fallbacks)
 	models := []string{
-		"openrouter/free",                     // Primary: Free tier models
-		"meta-llama/llama-3.1-8b-instruct",    // Fallback 1: Reliable instruction-following
-		"google/gemini-2.5-flash-lite",        // Fallback 2: Fast and capable
+		"meta-llama/llama-3.1-8b-instruct", // Primary: Reliable instruction-following
+		"mistralai/mistral-nemo",             // Fallback 1: Strong performance
+		"google/gemini-2.5-flash-lite",       // Fallback 2: Fast and capable
 	}
 
 	var lastErr error
